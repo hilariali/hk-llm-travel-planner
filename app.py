@@ -139,6 +139,9 @@ def main():
         layout="wide"
     )
     
+    # Initialize session FIRST
+    initialize_session()
+    
     # Header
     st.title("🏙️ HK LLM Travel Planner")
     st.markdown("*Pure LLM-powered accessible travel planning for Hong Kong*")
@@ -168,9 +171,6 @@ def main():
         
         st.header("📊 Session Info")
         st.write(f"Messages: {len(st.session_state.messages)}")
-    
-    # Initialize session
-    initialize_session()
     
     # Display conversation
     for message in st.session_state.messages:
