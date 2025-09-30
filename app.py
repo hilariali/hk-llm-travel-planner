@@ -13,7 +13,7 @@ from dataclasses import dataclass
 # Configuration
 AKASH_API_KEY = "sk-UVKYLhiNf0MKXRqbnDiehA"
 AKASH_BASE_URL = "https://chatapi.akash.network/api/v1"
-MODEL_NAME = "DeepSeek-R1-Distill-Llama-70B"
+MODEL_NAME = "DeepSeek-V3-1"
 
 @dataclass
 class ChatMessage:
@@ -118,13 +118,42 @@ def initialize_session():
         st.session_state.messages = [
             ChatMessage(
                 role="assistant",
-                content="🏙️ **Welcome to HK LLM Travel Planner!**\n\nI'm your AI travel assistant specialized in creating accessible Hong Kong itineraries for families and seniors.\n\n**Tell me about your travel plans:**\n- Who's traveling with you?\n- Any accessibility needs (wheelchair, mobility aids)?\n- Dietary preferences or restrictions?\n- Budget range per person/day?\n- How many days will you be visiting?\n- Any specific interests or must-see places?\n\nI'll create a personalized, accessible itinerary just for you! 🌟",
+                content="🏙️ **Welcome to HK LLM Travel Planner!**\n\nI'm your AI travel assistant specialized in creating accessible Hong Kong itineraries for families and seniors.\n\n**Use the quick options below or describe your travel plans in detail!** 🌟",
                 timestamp=datetime.now()
             )
         ]
     
     if "planner" not in st.session_state:
         st.session_state.planner = LLMTravelPlanner()
+
+def create_quick_options():
+    """Create quick option buttons for common travel scenarios."""
+    st.markdown("### 🚀 Quick Planning Options")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("👴👵 Senior-Friendly Trip", use_container_width=True):
+            return "Plan a 3-day accessible Hong Kong trip for elderly travelers who need wheelchair access, prefer soft meals, and want to avoid too much walking. Budget around $150 per day."
+        
+        if st.button("👨‍👩‍👧‍👦 Family Adventure", use_container_width=True):
+            return "Create a 4-day family-friendly Hong Kong itinerary for parents with young children (ages 5-12). Include kid-friendly attractions, accessible facilities, and budget around $120 per person per day."
+    
+    with col2:
+        if st.button("🥗 Vegetarian Explorer", use_container_width=True):
+            return "Recommend vegetarian and vegan restaurants in Hong Kong with accessible locations. Include soft meal options and dietary accommodation details."
+        
+        if st.button("💰 Budget Traveler", use_container_width=True):
+            return "Plan a budget-friendly 2-day Hong Kong itinerary under $80 per day, focusing on free attractions, affordable food, and accessible public transportation."
+    
+    with col3:
+        if st.button("🏛️ Culture & History", use_container_width=True):
+            return "Design a cultural Hong Kong experience focusing on museums, temples, and historical sites with full accessibility information and transportation details."
+        
+        if st.button("🌃 First-Time Visitor", use_container_width=True):
+            return "Create a must-see Hong Kong itinerary for first-time visitors, including iconic attractions like Victoria Peak, Star Ferry, and Temple Street Night Market with accessibility details."
+    
+    return None
 
 def display_message(message: ChatMessage):
     """Display a chat message."""
@@ -149,18 +178,19 @@ def main():
     # Sidebar
     with st.sidebar:
         st.header("🤖 AI Assistant")
-        st.success("✅ DeepSeek-R1 Connected")
+        st.success("✅ DeepSeek-V3 Connected")
         st.info(f"Model: {MODEL_NAME}")
         
         st.divider()
         
-        st.header("🎯 Quick Examples")
+        st.header("🎯 Accessibility Focus")
         st.markdown("""
-        **Try asking:**
-        - "Plan a 3-day trip for elderly parents with wheelchairs"
-        - "Vegetarian restaurants in Central with soft meals"
-        - "Accessible attractions for families with young children"
-        - "Budget-friendly itinerary under $100/day"
+        **Specialized in:**
+        - ♿ Wheelchair accessibility
+        - 🍽️ Dietary accommodations
+        - 👴 Senior-friendly pacing
+        - 👨‍👩‍👧‍👦 Family-friendly options
+        - 💰 Budget-conscious planning
         """)
         
         st.divider()
@@ -172,12 +202,25 @@ def main():
         st.header("📊 Session Info")
         st.write(f"Messages: {len(st.session_state.messages)}")
     
+    # Quick options (only show if conversation is new)
+    if len(st.session_state.messages) <= 1:
+        quick_prompt = create_quick_options()
+        if quick_prompt:
+            # Process the quick option as if user typed it
+            user_message = ChatMessage(
+                role="user",
+                content=quick_prompt,
+                timestamp=datetime.now()
+            )
+            st.session_state.messages.append(user_message)
+            st.rerun()
+    
     # Display conversation
     for message in st.session_state.messages:
         display_message(message)
     
     # Chat input
-    if prompt := st.chat_input("Describe your Hong Kong travel plans..."):
+    if prompt := st.chat_input("Or describe your specific Hong Kong travel needs..."):
         # Add user message
         user_message = ChatMessage(
             role="user",
