@@ -379,13 +379,36 @@ def main():
         # Quick options
         quick_prompt = create_quick_options()
         if quick_prompt:
-            # Process the quick option as if user typed it
+            # Add user message
             user_message = ChatMessage(
                 role="user",
                 content=quick_prompt,
                 timestamp=datetime.now()
             )
             st.session_state.messages.append(user_message)
+            
+            # Display user message
+            display_message(user_message)
+            
+            # Get AI response immediately
+            with st.chat_message("assistant"):
+                with st.spinner("🤔 Planning your perfect Hong Kong experience..."):
+                    response_content = st.session_state.planner.get_response(
+                        quick_prompt, 
+                        st.session_state.messages[:-1]  # Exclude the just-added user message
+                    )
+                    
+                    st.markdown(response_content)
+                    
+                    # Add assistant message
+                    assistant_message = ChatMessage(
+                        role="assistant",
+                        content=response_content,
+                        timestamp=datetime.now()
+                    )
+                    st.session_state.messages.append(assistant_message)
+            
+            # Force rerun to show the complete conversation
             st.rerun()
         
         st.markdown("---")
@@ -393,13 +416,36 @@ def main():
         # Custom detailed form
         custom_prompt = create_custom_form()
         if custom_prompt:
-            # Process the custom form as if user typed it
+            # Add user message
             user_message = ChatMessage(
                 role="user",
                 content=custom_prompt,
                 timestamp=datetime.now()
             )
             st.session_state.messages.append(user_message)
+            
+            # Display user message
+            display_message(user_message)
+            
+            # Get AI response immediately
+            with st.chat_message("assistant"):
+                with st.spinner("🤔 Planning your perfect Hong Kong experience..."):
+                    response_content = st.session_state.planner.get_response(
+                        custom_prompt, 
+                        st.session_state.messages[:-1]  # Exclude the just-added user message
+                    )
+                    
+                    st.markdown(response_content)
+                    
+                    # Add assistant message
+                    assistant_message = ChatMessage(
+                        role="assistant",
+                        content=response_content,
+                        timestamp=datetime.now()
+                    )
+                    st.session_state.messages.append(assistant_message)
+            
+            # Force rerun to show the complete conversation
             st.rerun()
     
     # Display conversation
