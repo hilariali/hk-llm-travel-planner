@@ -155,6 +155,178 @@ def create_quick_options():
     
     return None
 
+def create_custom_form():
+    """Create a detailed customizable form for specific travel requirements."""
+    with st.expander("📋 **Detailed Planning Form** - Customize Your Perfect Trip", expanded=False):
+        st.markdown("*Fill out this form for a highly personalized Hong Kong itinerary*")
+        
+        # Family Composition
+        st.subheader("👥 Family Composition")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            adults = st.number_input("Number of Adults", min_value=1, max_value=10, value=2)
+            seniors = st.number_input("Number of Seniors (65+)", min_value=0, max_value=10, value=0)
+        
+        with col2:
+            children = st.number_input("Number of Children", min_value=0, max_value=10, value=0)
+            if children > 0:
+                child_ages = st.text_input("Children's Ages (e.g., 5, 8, 12)", placeholder="5, 8, 12")
+        
+        # Mobility Requirements
+        st.subheader("♿ Mobility Requirements")
+        mobility_needs = st.multiselect(
+            "Select all that apply:",
+            [
+                "Wheelchair user",
+                "Walking aid (cane, walker)",
+                "Limited walking distance",
+                "Need elevator access",
+                "Avoid stairs completely",
+                "Frequent rest breaks needed",
+                "Mobility scooter user"
+            ]
+        )
+        
+        mobility_notes = st.text_area("Additional mobility considerations:", placeholder="Any specific mobility needs or concerns...")
+        
+        # Dietary Preferences
+        st.subheader("🍽️ Dietary Preferences & Restrictions")
+        dietary_prefs = st.multiselect(
+            "Select all that apply:",
+            [
+                "Soft meals required",
+                "Vegetarian",
+                "Vegan",
+                "Halal",
+                "Kosher",
+                "Gluten-free",
+                "Dairy-free",
+                "No seafood",
+                "No spicy food",
+                "Diabetic-friendly"
+            ]
+        )
+        
+        allergies = st.text_input("Food allergies:", placeholder="e.g., nuts, shellfish, eggs")
+        dietary_notes = st.text_area("Additional dietary notes:", placeholder="Any other dietary requirements or preferences...")
+        
+        # Budget & Duration
+        st.subheader("💰 Budget & Trip Duration")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            duration = st.number_input("Trip Duration (days)", min_value=1, max_value=14, value=3)
+            budget_type = st.radio("Budget is per:", ["Person per day", "Group per day", "Total trip"])
+        
+        with col2:
+            budget_min = st.number_input("Minimum Budget (HKD)", min_value=0, value=500)
+            budget_max = st.number_input("Maximum Budget (HKD)", min_value=0, value=1500)
+        
+        # Transportation Preferences
+        st.subheader("🚇 Transportation Preferences")
+        transport_prefs = st.multiselect(
+            "Preferred transportation methods:",
+            [
+                "MTR (subway)",
+                "Bus",
+                "Taxi",
+                "Private car/van",
+                "Ferry",
+                "Tram",
+                "Walking (short distances)",
+                "Accessible tour bus"
+            ],
+            default=["MTR (subway)", "Taxi"]
+        )
+        
+        # Interests & Preferences
+        st.subheader("🎯 Interests & Preferences")
+        interests = st.multiselect(
+            "What interests you most?",
+            [
+                "Museums & Culture",
+                "Food & Dining",
+                "Shopping",
+                "Nature & Parks",
+                "Temples & Religious Sites",
+                "Architecture & Skyline",
+                "Markets & Street Food",
+                "Entertainment & Shows",
+                "Photography spots",
+                "Local experiences"
+            ]
+        )
+        
+        # Special Requirements
+        special_requirements = st.text_area(
+            "Special requirements or preferences:",
+            placeholder="Any other specific needs, preferences, or things to avoid..."
+        )
+        
+        # Submit button
+        if st.button("🎯 Generate My Custom Itinerary", use_container_width=True, type="primary"):
+            # Build comprehensive prompt from form data
+            prompt_parts = [
+                f"Create a detailed {duration}-day Hong Kong itinerary for:"
+            ]
+            
+            # Family composition
+            family_desc = []
+            if adults > 0:
+                family_desc.append(f"{adults} adult{'s' if adults > 1 else ''}")
+            if seniors > 0:
+                family_desc.append(f"{seniors} senior{'s' if seniors > 1 else ''} (65+)")
+            if children > 0:
+                child_desc = f"{children} child{'ren' if children > 1 else ''}"
+                if 'child_ages' in locals() and child_ages:
+                    child_desc += f" (ages: {child_ages})"
+                family_desc.append(child_desc)
+            
+            prompt_parts.append(f"- Group: {', '.join(family_desc)}")
+            
+            # Mobility requirements
+            if mobility_needs:
+                prompt_parts.append(f"- Mobility needs: {', '.join(mobility_needs)}")
+            if mobility_notes:
+                prompt_parts.append(f"- Mobility notes: {mobility_notes}")
+            
+            # Dietary requirements
+            if dietary_prefs:
+                prompt_parts.append(f"- Dietary preferences: {', '.join(dietary_prefs)}")
+            if allergies:
+                prompt_parts.append(f"- Food allergies: {allergies}")
+            if dietary_notes:
+                prompt_parts.append(f"- Dietary notes: {dietary_notes}")
+            
+            # Budget
+            budget_desc = f"HKD {budget_min}-{budget_max} {budget_type.lower()}"
+            prompt_parts.append(f"- Budget: {budget_desc}")
+            
+            # Transportation
+            if transport_prefs:
+                prompt_parts.append(f"- Preferred transportation: {', '.join(transport_prefs)}")
+            
+            # Interests
+            if interests:
+                prompt_parts.append(f"- Main interests: {', '.join(interests)}")
+            
+            # Special requirements
+            if special_requirements:
+                prompt_parts.append(f"- Special requirements: {special_requirements}")
+            
+            prompt_parts.append("\nPlease provide:")
+            prompt_parts.append("- Day-by-day detailed itinerary")
+            prompt_parts.append("- Specific venue recommendations with accessibility details")
+            prompt_parts.append("- Transportation instructions between locations")
+            prompt_parts.append("- Cost estimates for activities and meals")
+            prompt_parts.append("- Timing and pacing recommendations")
+            prompt_parts.append("- Explanations for why each recommendation suits the group's needs")
+            
+            return "\n".join(prompt_parts)
+    
+    return None
+
 def display_message(message: ChatMessage):
     """Display a chat message."""
     with st.chat_message(message.role):
@@ -202,14 +374,29 @@ def main():
         st.header("📊 Session Info")
         st.write(f"Messages: {len(st.session_state.messages)}")
     
-    # Quick options (only show if conversation is new)
+    # Quick options and custom form (only show if conversation is new)
     if len(st.session_state.messages) <= 1:
+        # Quick options
         quick_prompt = create_quick_options()
         if quick_prompt:
             # Process the quick option as if user typed it
             user_message = ChatMessage(
                 role="user",
                 content=quick_prompt,
+                timestamp=datetime.now()
+            )
+            st.session_state.messages.append(user_message)
+            st.rerun()
+        
+        st.markdown("---")
+        
+        # Custom detailed form
+        custom_prompt = create_custom_form()
+        if custom_prompt:
+            # Process the custom form as if user typed it
+            user_message = ChatMessage(
+                role="user",
+                content=custom_prompt,
                 timestamp=datetime.now()
             )
             st.session_state.messages.append(user_message)
